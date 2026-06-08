@@ -1,6 +1,6 @@
-# Subscription Metrics
+# Subscription SaaS Metrics Tool
 
-A CLI tool that reads customer and subscription CSV files and produces a JSON report with three SaaS business metrics.
+A small data analysis tool for a subscription SaaS product. Given exported CSV files from the business, it computes key metrics and produces a JSON report that can be used for further analysis or reporting.
 
 ## Metrics
 
