@@ -1,0 +1,176 @@
+{
+  "monthly_mrr": [
+    {
+      "month": "2024-01",
+      "mrr": 85.0
+    },
+    {
+      "month": "2024-02",
+      "mrr": 165.0
+    },
+    {
+      "month": "2024-03",
+      "mrr": 220.0
+    },
+    {
+      "month": "2024-04",
+      "mrr": 335.0
+    },
+    {
+      "month": "2024-05",
+      "mrr": 295.0
+    },
+    {
+      "month": "2024-06",
+      "mrr": 460.0
+    },
+    {
+      "month": "2024-07",
+      "mrr": 467.0
+    },
+    {
+      "month": "2024-08",
+      "mrr": 487.0
+    },
+    {
+      "month": "2024-09",
+      "mrr": 612.0
+    },
+    {
+      "month": "2024-10",
+      "mrr": 709.0
+    },
+    {
+      "month": "2024-11",
+      "mrr": 826.0
+    },
+    {
+      "month": "2024-12",
+      "mrr": 966.0
+    }
+  ],
+  "monthly_churn": [
+    {
+      "month": "2024-01",
+      "churned_customers": 0
+    },
+    {
+      "month": "2024-02",
+      "churned_customers": 1
+    },
+    {
+      "month": "2024-03",
+      "churned_customers": 0
+    },
+    {
+      "month": "2024-04",
+      "churned_customers": 2
+    },
+    {
+      "month": "2024-05",
+      "churned_customers": 0
+    },
+    {
+      "month": "2024-06",
+      "churned_customers": 0
+    },
+    {
+      "month": "2024-07",
+      "churned_customers": 1
+    },
+    {
+      "month": "2024-08",
+      "churned_customers": 0
+    },
+    {
+      "month": "2024-09",
+      "churned_customers": 0
+    },
+    {
+      "month": "2024-10",
+      "churned_customers": 0
+    },
+    {
+      "month": "2024-11",
+      "churned_customers": 0
+    },
+    {
+      "month": "2024-12",
+      "churned_customers": 0
+    }
+  ],
+  "cohort_retention_3m": [
+    {
+      "cohort_month": "2024-01",
+      "cohort_size": 3,
+      "active_after_3_months": 2,
+      "retention_rate_3m": 0.6667
+    },
+    {
+      "cohort_month": "2024-02",
+      "cohort_size": 2,
+      "active_after_3_months": 0,
+      "retention_rate_3m": 0.0
+    },
+    {
+      "cohort_month": "2024-03",
+      "cohort_size": 3,
+      "active_after_3_months": 2,
+      "retention_rate_3m": 0.6667
+    },
+    {
+      "cohort_month": "2024-04",
+      "cohort_size": 3,
+      "active_after_3_months": 3,
+      "retention_rate_3m": 1.0
+    },
+    {
+      "cohort_month": "2024-05",
+      "cohort_size": 3,
+      "active_after_3_months": 3,
+      "retention_rate_3m": 1.0
+    },
+    {
+      "cohort_month": "2024-06",
+      "cohort_size": 3,
+      "active_after_3_months": 2,
+      "retention_rate_3m": 0.6667
+    },
+    {
+      "cohort_month": "2024-07",
+      "cohort_size": 2,
+      "active_after_3_months": 2,
+      "retention_rate_3m": 1.0
+    },
+    {
+      "cohort_month": "2024-08",
+      "cohort_size": 3,
+      "active_after_3_months": 2,
+      "retention_rate_3m": 0.6667
+    },
+    {
+      "cohort_month": "2024-09",
+      "cohort_size": 3,
+      "active_after_3_months": 2,
+      "retention_rate_3m": 0.6667
+    },
+    {
+      "cohort_month": "2024-10",
+      "cohort_size": 4,
+      "active_after_3_months": 4,
+      "retention_rate_3m": 1.0
+    },
+    {
+      "cohort_month": "2024-11",
+      "cohort_size": 3,
+      "active_after_3_months": 3,
+      "retention_rate_3m": 1.0
+    },
+    {
+      "cohort_month": "2024-12",
+      "cohort_size": 6,
+      "active_after_3_months": 6,
+      "retention_rate_3m": 1.0
+    }
+  ]
+}
