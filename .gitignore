@@ -48,5 +48,5 @@ dmypy.json
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
-# Results
-output.json
+# Generated output
+data/output/

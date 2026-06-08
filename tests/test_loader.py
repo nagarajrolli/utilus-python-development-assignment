@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from data.loader import load_customers, load_subscriptions
+from data.loader import load_customers, load_subscriptions, warn_unknown_customers
 
 
 def _csv(tmp_path, name: str, content: str) -> str:
@@ -195,3 +195,90 @@ class TestLoadSubscriptions:
         df = load_subscriptions(path)
         assert len(df) == 1
         assert df.iloc[0]["start_date"] == pd.Timestamp("2024-01-01")
+
+
+# ---------------------------------------------------------------------------
+# Column validation
+# ---------------------------------------------------------------------------
+
+
+class TestColumnValidation:
+    def test_customers_missing_column_raises(self, tmp_path):
+        path = _csv(tmp_path, "c.csv", "customer_id,country\nC001,NL\n")
+        with pytest.raises(ValueError, match="signup_date"):
+            load_customers(path)
+
+    def test_customers_missing_multiple_columns_raises(self, tmp_path):
+        path = _csv(tmp_path, "c.csv", "customer_id\nC001\n")
+        with pytest.raises(ValueError, match="missing required column"):
+            load_customers(path)
+
+    def test_subscriptions_missing_column_raises(self, tmp_path):
+        path = _csv(
+            tmp_path,
+            "s.csv",
+            "customer_id,start_date,end_date,plan\nC001,2024-01-01,,basic\n",
+        )
+        with pytest.raises(ValueError, match="monthly_price"):
+            load_subscriptions(path)
+
+    def test_customers_all_columns_present_does_not_raise(self, tmp_path):
+        path = _csv(tmp_path, "c.csv", "customer_id,signup_date,country\nC001,2024-01-01,NL\n")
+        load_customers(path)  # should not raise
+
+    def test_subscriptions_all_columns_present_does_not_raise(self, tmp_path):
+        path = _csv(
+            tmp_path,
+            "s.csv",
+            "customer_id,start_date,end_date,plan,monthly_price\nC001,2024-01-01,,basic,30\n",
+        )
+        load_subscriptions(path)  # should not raise
+
+
+# ---------------------------------------------------------------------------
+# Unknown customer_id warning
+# ---------------------------------------------------------------------------
+
+
+class TestUnknownCustomerWarning:
+    def test_unknown_customer_id_is_warned(self, caplog):
+        import logging
+
+        customers = pd.DataFrame(
+            [{"customer_id": "C001", "signup_date": pd.Timestamp("2024-01-01"), "country": "NL"}]
+        )
+        subscriptions = pd.DataFrame(
+            [
+                {
+                    "customer_id": "C999",
+                    "start_date": pd.Timestamp("2024-01-01"),
+                    "end_date": pd.NaT,
+                    "plan": "basic",
+                    "monthly_price": 25.0,
+                }
+            ]
+        )
+        with caplog.at_level(logging.WARNING, logger="data.loader"):
+            warn_unknown_customers(customers, subscriptions)
+        assert any("C999" in msg for msg in caplog.messages)
+
+    def test_known_customer_id_produces_no_warning(self, caplog):
+        import logging
+
+        customers = pd.DataFrame(
+            [{"customer_id": "C001", "signup_date": pd.Timestamp("2024-01-01"), "country": "NL"}]
+        )
+        subscriptions = pd.DataFrame(
+            [
+                {
+                    "customer_id": "C001",
+                    "start_date": pd.Timestamp("2024-01-01"),
+                    "end_date": pd.NaT,
+                    "plan": "basic",
+                    "monthly_price": 30.0,
+                }
+            ]
+        )
+        with caplog.at_level(logging.WARNING, logger="data.loader"):
+            warn_unknown_customers(customers, subscriptions)
+        assert not any("not found in customers" in msg for msg in caplog.messages)

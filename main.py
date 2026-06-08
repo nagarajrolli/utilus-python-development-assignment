@@ -4,7 +4,7 @@ import sys
 
 import click
 
-from data.loader import load_customers, load_subscriptions
+from data.loader import load_customers, load_subscriptions, warn_unknown_customers
 from metrics.churn import MonthlyChurnMetric
 from metrics.cohort_retention import CohortRetentionMetric
 from metrics.mrr import MonthlyMRRMetric
@@ -24,8 +24,13 @@ _METRICS = [
 @click.argument("output_file", type=click.Path())
 def main(customers_file: str, subscriptions_file: str, output_file: str) -> None:
     """Compute subscription metrics and write a JSON report to OUTPUT_FILE."""
-    customers = load_customers(customers_file)
-    subscriptions = load_subscriptions(subscriptions_file)
+    try:
+        customers = load_customers(customers_file)
+        subscriptions = load_subscriptions(subscriptions_file)
+    except ValueError as exc:
+        raise click.UsageError(str(exc)) from exc
+
+    warn_unknown_customers(customers, subscriptions)
 
     report = {metric.key: metric.compute(customers, subscriptions) for metric in _METRICS}
 

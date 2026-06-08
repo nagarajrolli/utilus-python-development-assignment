@@ -4,6 +4,29 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
+_CUSTOMERS_REQUIRED = {"customer_id", "signup_date", "country"}
+_SUBSCRIPTIONS_REQUIRED = {"customer_id", "start_date", "end_date", "plan", "monthly_price"}
+
+
+def _require_columns(df: pd.DataFrame, required: set[str], source: str) -> None:
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError(
+            f"{source}: missing required column(s): {', '.join(sorted(missing))}"
+        )
+
+
+def warn_unknown_customers(customers: pd.DataFrame, subscriptions: pd.DataFrame) -> None:
+    """Log a warning for every subscription whose customer_id is absent from customers."""
+    known = set(customers["customer_id"])
+    unknown = set(subscriptions["customer_id"]) - known
+    for cid in sorted(unknown):
+        logger.warning(
+            "subscriptions: customer_id %s not found in customers — "
+            "included in MRR/churn, excluded from cohort retention",
+            cid,
+        )
+
 
 def load_customers(path: str) -> pd.DataFrame:
     """
@@ -14,9 +37,12 @@ def load_customers(path: str) -> pd.DataFrame:
     - country normalised to uppercase
     - Rows with unparseable signup_date are dropped (warning logged)
     - Duplicate customer_id: earliest signup_date is kept (warning logged)
+
+    Raises ValueError if any required column is absent.
     """
     df = pd.read_csv(path, dtype=str)
     df.columns = df.columns.str.strip()
+    _require_columns(df, _CUSTOMERS_REQUIRED, path)
     for col in df.select_dtypes(include="str").columns:
         df[col] = df[col].str.strip()
 
@@ -49,9 +75,12 @@ def load_subscriptions(path: str) -> pd.DataFrame:
     - Rows where end_date < start_date dropped (warning logged)
     - Overlapping subscriptions per customer: earlier-starting row kept,
       later-starting overlapping row dropped (warning logged)
+
+    Raises ValueError if any required column is absent.
     """
     df = pd.read_csv(path, dtype=str)
     df.columns = df.columns.str.strip()
+    _require_columns(df, _SUBSCRIPTIONS_REQUIRED, path)
     for col in df.select_dtypes(include="str").columns:
         df[col] = df[col].str.strip()
 

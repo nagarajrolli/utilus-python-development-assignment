@@ -6,7 +6,7 @@ This project reads two CSV files (`customers.csv`, `subscriptions.csv`), compute
 three subscription-business metrics, and writes a single JSON report.
 
 ```
-python main.py customers.csv subscriptions.csv output.json
+python main.py data/raw/customers.csv data/raw/subscriptions.csv data/output/report.json
 ```
 
 ---
@@ -18,7 +18,11 @@ python main.py customers.csv subscriptions.csv output.json
 ├── main.py                        # CLI entry point (click)
 ├── data/
 │   ├── __init__.py
-│   └── loader.py                  # CSV loading, cleaning, validation
+│   ├── loader.py                  # CSV loading, cleaning, validation
+│   ├── raw/                       # Source CSV files (versioned)
+│   │   ├── customers.csv
+│   │   └── subscriptions.csv
+│   └── output/                    # Generated reports (git-ignored)
 ├── metrics/
 │   ├── __init__.py
 │   ├── base.py                    # BaseMetric abstract class
@@ -271,7 +275,7 @@ No other files need to change.
 pip install -r requirements.txt
 
 # Run the report
-python main.py customers.csv subscriptions.csv output.json
+python main.py data/raw/customers.csv data/raw/subscriptions.csv data/output/report.json
 
 # Run tests
 pytest tests/
