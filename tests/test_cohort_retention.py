@@ -84,17 +84,17 @@ class TestCohortRetention:
         result = metric.compute(customers, subs)[0]
         assert result["active_after_3_months"] == 1
 
-    def test_subscription_starting_exactly_on_retention_date_counts(self, metric):
-        # start_date == retention_date is the boundary — should be active
+    @pytest.mark.parametrize(
+        "start, end, expected_active",
+        [
+            ("2024-04-05", None, 1),            # starts exactly on retention_date
+            ("2024-01-05", "2024-04-05", 1),    # ends exactly on retention_date
+            ("2024-01-05", "2024-04-04", 0),    # ends one day before retention_date
+        ],
+        ids=["starts_on_retention_date", "ends_on_retention_date", "ends_before_retention_date"],
+    )
+    def test_retention_date_boundary(self, metric, start, end, expected_active):
         customers = make_customers([("C001", "2024-01-05", "NL")])
-        # retention_date = 2024-04-05; subscription starts exactly on that date
-        subs = make_subscriptions([("C001", "2024-04-05", None, 30)])
+        subs = make_subscriptions([("C001", start, end, 30)])
         result = metric.compute(customers, subs)[0]
-        assert result["active_after_3_months"] == 1
-
-    def test_subscription_ending_exactly_on_retention_date_counts(self, metric):
-        # end_date == retention_date means the subscription was still active that day
-        customers = make_customers([("C001", "2024-01-05", "NL")])
-        subs = make_subscriptions([("C001", "2024-01-05", "2024-04-05", 30)])
-        result = metric.compute(customers, subs)[0]
-        assert result["active_after_3_months"] == 1
+        assert result["active_after_3_months"] == expected_active

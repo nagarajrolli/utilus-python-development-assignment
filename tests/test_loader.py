@@ -100,50 +100,21 @@ class TestLoadSubscriptions:
         df = load_subscriptions(path)
         assert pd.isna(df.iloc[0]["end_date"])
 
-    def test_invalid_start_date_skipped(self, tmp_path):
+    @pytest.mark.parametrize(
+        "bad_row",
+        [
+            "C001,bad-date,,basic,30\n",
+            "C001,2024-01-01,2024-02-30,basic,30\n",   # Feb 30 does not exist
+            'C001,2024-01-01,,basic,"thirty"\n',
+            "C001,2024-09-29,2024-08-20,basic,20\n",   # end before start
+        ],
+        ids=["invalid_start_date", "invalid_end_date", "non_numeric_price", "end_before_start"],
+    )
+    def test_bad_row_is_skipped(self, tmp_path, bad_row):
         path = _csv(
             tmp_path,
             "s.csv",
-            "customer_id,start_date,end_date,plan,monthly_price\n"
-            "C001,bad-date,,basic,30\n"
-            "C002,2024-01-01,,basic,25\n",
-        )
-        df = load_subscriptions(path)
-        assert len(df) == 1
-        assert df.iloc[0]["customer_id"] == "C002"
-
-    def test_invalid_end_date_skipped(self, tmp_path):
-        # Feb 30 does not exist
-        path = _csv(
-            tmp_path,
-            "s.csv",
-            "customer_id,start_date,end_date,plan,monthly_price\n"
-            "C001,2024-01-01,2024-02-30,basic,30\n"
-            "C002,2024-01-01,,basic,25\n",
-        )
-        df = load_subscriptions(path)
-        assert len(df) == 1
-        assert df.iloc[0]["customer_id"] == "C002"
-
-    def test_non_numeric_price_skipped(self, tmp_path):
-        path = _csv(
-            tmp_path,
-            "s.csv",
-            "customer_id,start_date,end_date,plan,monthly_price\n"
-            'C001,2024-01-01,,basic,"thirty"\n'
-            "C002,2024-01-01,,basic,25\n",
-        )
-        df = load_subscriptions(path)
-        assert len(df) == 1
-        assert df.iloc[0]["customer_id"] == "C002"
-
-    def test_end_before_start_skipped(self, tmp_path):
-        path = _csv(
-            tmp_path,
-            "s.csv",
-            "customer_id,start_date,end_date,plan,monthly_price\n"
-            "C001,2024-09-29,2024-08-20,basic,20\n"
-            "C002,2024-01-01,,basic,25\n",
+            f"customer_id,start_date,end_date,plan,monthly_price\n{bad_row}C002,2024-01-01,,basic,25\n",
         )
         df = load_subscriptions(path)
         assert len(df) == 1

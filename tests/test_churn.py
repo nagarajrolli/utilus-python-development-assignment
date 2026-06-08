@@ -24,37 +24,27 @@ class TestMonthlyChurn:
         months = {r["month"]: r["churned_customers"] for r in metric.compute(no_customers, subs)}
         assert months["2024-03"] == 1
 
-    def test_resubscription_within_30_days_is_not_churn(self, metric, no_customers):
+    @pytest.mark.parametrize(
+        "end_date, resub_date, churn_month, expected_churn",
+        [
+            ("2024-03-15", "2024-04-01", "2024-03", 0),  # 17 days — within window
+            ("2024-03-01", "2024-03-31", "2024-03", 0),  # exactly 30 days — inclusive boundary
+            ("2024-03-01", "2024-04-01", "2024-03", 1),  # 31 days — outside window
+            ("2024-03-31", "2024-04-01", "2024-03", 0),  # plan change next day
+        ],
+        ids=["within_30_days", "exactly_30_days", "31_days_is_churn", "plan_change"],
+    )
+    def test_resubscription_window(
+        self, metric, no_customers, end_date, resub_date, churn_month, expected_churn
+    ):
         subs = make_subscriptions(
             [
-                ("C001", "2024-01-01", "2024-03-15", 30),
-                ("C001", "2024-04-01", None, 30),  # 17 days later
+                ("C001", "2024-01-01", end_date, 30),
+                ("C001", resub_date, None, 30),
             ]
         )
         months = {r["month"]: r["churned_customers"] for r in metric.compute(no_customers, subs)}
-        assert months.get("2024-03", 0) == 0
-
-    def test_resubscription_exactly_30_days_later_is_not_churn(self, metric, no_customers):
-        # end_date = 2024-03-01; 30 days later = 2024-03-31 (inclusive boundary)
-        subs = make_subscriptions(
-            [
-                ("C001", "2024-01-01", "2024-03-01", 30),
-                ("C001", "2024-03-31", None, 30),
-            ]
-        )
-        months = {r["month"]: r["churned_customers"] for r in metric.compute(no_customers, subs)}
-        assert months.get("2024-03", 0) == 0
-
-    def test_resubscription_31_days_later_is_churn(self, metric, no_customers):
-        # end_date = 2024-03-01; 31 days later = 2024-04-01 (outside window)
-        subs = make_subscriptions(
-            [
-                ("C001", "2024-01-01", "2024-03-01", 30),
-                ("C001", "2024-04-01", None, 30),
-            ]
-        )
-        months = {r["month"]: r["churned_customers"] for r in metric.compute(no_customers, subs)}
-        assert months["2024-03"] == 1
+        assert months.get(churn_month, 0) == expected_churn
 
     def test_multiple_churns_same_month(self, metric, no_customers):
         subs = make_subscriptions(
@@ -84,14 +74,3 @@ class TestMonthlyChurn:
         assert "2024-01" in months
         assert "2024-02" in months
         assert "2024-03" in months
-
-    def test_plan_change_within_30_days_is_not_churn(self, metric, no_customers):
-        # Customer ends basic and starts pro the next day — not a churn
-        subs = make_subscriptions(
-            [
-                ("C001", "2024-01-01", "2024-03-31", 30),
-                ("C001", "2024-04-01", None, 50),
-            ]
-        )
-        months = {r["month"]: r["churned_customers"] for r in metric.compute(no_customers, subs)}
-        assert months.get("2024-03", 0) == 0
