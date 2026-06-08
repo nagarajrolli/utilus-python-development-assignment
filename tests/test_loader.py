@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 import pytest
 
@@ -17,7 +19,9 @@ def _csv(tmp_path, name: str, content: str) -> str:
 
 class TestLoadCustomers:
     def test_basic_load(self, tmp_path):
-        path = _csv(tmp_path, "c.csv", "customer_id,signup_date,country\nC001,2024-01-01,NL\n")
+        path = _csv(
+            tmp_path, "c.csv", "customer_id,signup_date,country\nC001,2024-01-01,NL\n"
+        )
         df = load_customers(path)
         assert len(df) == 1
         assert df.iloc[0]["customer_id"] == "C001"
@@ -56,20 +60,26 @@ class TestLoadCustomers:
         assert df.iloc[0]["country"] == "DE"
 
     def test_country_normalised_to_uppercase(self, tmp_path):
-        path = _csv(tmp_path, "c.csv", "customer_id,signup_date,country\nC001,2024-01-01,nl\n")
+        path = _csv(
+            tmp_path, "c.csv", "customer_id,signup_date,country\nC001,2024-01-01,nl\n"
+        )
         df = load_customers(path)
         assert df.iloc[0]["country"] == "NL"
 
     def test_whitespace_stripped(self, tmp_path):
         path = _csv(
-            tmp_path, "c.csv", "customer_id,signup_date,country\n C001 , 2024-01-01 , NL \n"
+            tmp_path,
+            "c.csv",
+            "customer_id,signup_date,country\n C001 , 2024-01-01 , NL \n",
         )
         df = load_customers(path)
         assert df.iloc[0]["customer_id"] == "C001"
         assert df.iloc[0]["country"] == "NL"
 
     def test_missing_country_row_is_kept(self, tmp_path):
-        path = _csv(tmp_path, "c.csv", "customer_id,signup_date,country\nC001,2024-01-01,\n")
+        path = _csv(
+            tmp_path, "c.csv", "customer_id,signup_date,country\nC001,2024-01-01,\n"
+        )
         df = load_customers(path)
         assert len(df) == 1
 
@@ -104,17 +114,23 @@ class TestLoadSubscriptions:
         "bad_row",
         [
             "C001,bad-date,,basic,30\n",
-            "C001,2024-01-01,2024-02-30,basic,30\n",   # Feb 30 does not exist
+            "C001,2024-01-01,2024-02-30,basic,30\n",  # Feb 30 does not exist
             'C001,2024-01-01,,basic,"thirty"\n',
-            "C001,2024-09-29,2024-08-20,basic,20\n",   # end before start
+            "C001,2024-09-29,2024-08-20,basic,20\n",  # end before start
         ],
-        ids=["invalid_start_date", "invalid_end_date", "non_numeric_price", "end_before_start"],
+        ids=[
+            "invalid_start_date",
+            "invalid_end_date",
+            "non_numeric_price",
+            "end_before_start",
+        ],
     )
     def test_bad_row_is_skipped(self, tmp_path, bad_row):
         path = _csv(
             tmp_path,
             "s.csv",
-            f"customer_id,start_date,end_date,plan,monthly_price\n{bad_row}C002,2024-01-01,,basic,25\n",
+            "customer_id,start_date,end_date,plan,monthly_price\n"
+            f"{bad_row}C002,2024-01-01,,basic,25\n",
         )
         df = load_subscriptions(path)
         assert len(df) == 1
@@ -194,7 +210,9 @@ class TestColumnValidation:
             load_subscriptions(path)
 
     def test_customers_all_columns_present_does_not_raise(self, tmp_path):
-        path = _csv(tmp_path, "c.csv", "customer_id,signup_date,country\nC001,2024-01-01,NL\n")
+        path = _csv(
+            tmp_path, "c.csv", "customer_id,signup_date,country\nC001,2024-01-01,NL\n"
+        )
         load_customers(path)  # should not raise
 
     def test_subscriptions_all_columns_present_does_not_raise(self, tmp_path):
@@ -213,10 +231,14 @@ class TestColumnValidation:
 
 class TestUnknownCustomerWarning:
     def test_unknown_customer_id_is_warned(self, caplog):
-        import logging
-
         customers = pd.DataFrame(
-            [{"customer_id": "C001", "signup_date": pd.Timestamp("2024-01-01"), "country": "NL"}]
+            [
+                {
+                    "customer_id": "C001",
+                    "signup_date": pd.Timestamp("2024-01-01"),
+                    "country": "NL",
+                }
+            ]
         )
         subscriptions = pd.DataFrame(
             [
@@ -234,10 +256,14 @@ class TestUnknownCustomerWarning:
         assert any("C999" in msg for msg in caplog.messages)
 
     def test_known_customer_id_produces_no_warning(self, caplog):
-        import logging
-
         customers = pd.DataFrame(
-            [{"customer_id": "C001", "signup_date": pd.Timestamp("2024-01-01"), "country": "NL"}]
+            [
+                {
+                    "customer_id": "C001",
+                    "signup_date": pd.Timestamp("2024-01-01"),
+                    "country": "NL",
+                }
+            ]
         )
         subscriptions = pd.DataFrame(
             [

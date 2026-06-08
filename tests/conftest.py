@@ -6,7 +6,11 @@ def make_customers(rows: list[tuple]) -> pd.DataFrame:
     """rows: [(customer_id, signup_date_str, country), ...]"""
     return pd.DataFrame(
         [
-            {"customer_id": cid, "signup_date": pd.Timestamp(signup), "country": country}
+            {
+                "customer_id": cid,
+                "signup_date": pd.Timestamp(signup),
+                "country": country,
+            }
             for cid, signup, country in rows
         ]
     )

@@ -9,7 +9,9 @@ from metrics.churn import MonthlyChurnMetric
 from metrics.cohort_retention import CohortRetentionMetric
 from metrics.mrr import MonthlyMRRMetric
 
-logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s", stream=sys.stderr)
+logging.basicConfig(
+    level=logging.WARNING, format="%(levelname)s: %(message)s", stream=sys.stderr
+)
 
 _METRICS = [
     MonthlyMRRMetric(),
@@ -32,9 +34,11 @@ def main(customers_file: str, subscriptions_file: str, output_file: str) -> None
 
     warn_unknown_customers(customers, subscriptions)
 
-    report = {metric.key: metric.compute(customers, subscriptions) for metric in _METRICS}
+    report = {
+        metric.key: metric.compute(customers, subscriptions) for metric in _METRICS
+    }
 
-    with open(output_file, "w") as fh:
+    with open(output_file, "w", encoding="utf-8") as fh:
         json.dump(report, fh, indent=2)
 
     click.echo(f"Report written to {output_file}")

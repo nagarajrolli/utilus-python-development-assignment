@@ -19,7 +19,9 @@ class MonthlyMRRMetric(BaseMetric):
 
     key = "monthly_mrr"
 
-    def compute(self, customers: pd.DataFrame, subscriptions: pd.DataFrame) -> list[dict]:
+    def compute(
+        self, customers: pd.DataFrame, subscriptions: pd.DataFrame
+    ) -> list[dict]:
         subs = subscriptions
         if subs.empty:
             return []

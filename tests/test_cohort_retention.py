@@ -1,4 +1,3 @@
-import pandas as pd
 import pytest
 
 from metrics.cohort_retention import CohortRetentionMetric
@@ -11,15 +10,25 @@ def metric() -> CohortRetentionMetric:
 
 
 class TestCohortRetention:
-    def test_empty_customers_returns_empty(self, metric, no_customers, no_subscriptions):
+    def test_empty_customers_returns_empty(
+        self, metric, no_customers, no_subscriptions
+    ):
         assert metric.compute(no_customers, no_subscriptions) == []
 
     def test_cohort_size_counts_customers_in_signup_month(self, metric):
         customers = make_customers(
-            [("C001", "2024-01-05", "NL"), ("C002", "2024-01-20", "DE"), ("C003", "2024-02-01", "FR")]
+            [
+                ("C001", "2024-01-05", "NL"),
+                ("C002", "2024-01-20", "DE"),
+                ("C003", "2024-02-01", "FR"),
+            ]
         )
         subs = make_subscriptions(
-            [("C001", "2024-01-05", None, 30), ("C002", "2024-01-20", None, 25), ("C003", "2024-02-01", None, 20)]
+            [
+                ("C001", "2024-01-05", None, 30),
+                ("C002", "2024-01-20", None, 25),
+                ("C003", "2024-02-01", None, 20),
+            ]
         )
         result = {r["cohort_month"]: r for r in metric.compute(customers, subs)}
         assert result["2024-01"]["cohort_size"] == 2
@@ -47,7 +56,7 @@ class TestCohortRetention:
         )
         subs = make_subscriptions(
             [
-                ("C001", "2024-01-05", None, 30),          # active on 2024-04-05 ✓
+                ("C001", "2024-01-05", None, 30),  # active on 2024-04-05 ✓
                 ("C002", "2024-01-20", "2024-02-28", 25),  # ended before 2024-04-20
             ]
         )
@@ -55,7 +64,9 @@ class TestCohortRetention:
         assert result["active_after_3_months"] == 1
         assert result["retention_rate_3m"] == 0.5
 
-    def test_customer_with_no_subscription_is_not_active(self, metric, no_subscriptions):
+    def test_customer_with_no_subscription_is_not_active(
+        self, metric, no_subscriptions
+    ):
         customers = make_customers([("C001", "2024-01-05", "NL")])
         result = metric.compute(customers, no_subscriptions)[0]
         assert result["active_after_3_months"] == 0
@@ -78,7 +89,12 @@ class TestCohortRetention:
         subs = make_subscriptions(
             [
                 ("C001", "2024-01-05", "2024-02-01", 30),
-                ("C001", "2024-03-15", None, 30),  # resubscribed; active on 2024-04-05 ✓
+                (
+                    "C001",
+                    "2024-03-15",
+                    None,
+                    30,
+                ),  # resubscribed; active on 2024-04-05 ✓
             ]
         )
         result = metric.compute(customers, subs)[0]
@@ -87,11 +103,15 @@ class TestCohortRetention:
     @pytest.mark.parametrize(
         "start, end, expected_active",
         [
-            ("2024-04-05", None, 1),            # starts exactly on retention_date
-            ("2024-01-05", "2024-04-05", 1),    # ends exactly on retention_date
-            ("2024-01-05", "2024-04-04", 0),    # ends one day before retention_date
+            ("2024-04-05", None, 1),  # starts exactly on retention_date
+            ("2024-01-05", "2024-04-05", 1),  # ends exactly on retention_date
+            ("2024-01-05", "2024-04-04", 0),  # ends one day before retention_date
         ],
-        ids=["starts_on_retention_date", "ends_on_retention_date", "ends_before_retention_date"],
+        ids=[
+            "starts_on_retention_date",
+            "ends_on_retention_date",
+            "ends_before_retention_date",
+        ],
     )
     def test_retention_date_boundary(self, metric, start, end, expected_active):
         customers = make_customers([("C001", "2024-01-05", "NL")])

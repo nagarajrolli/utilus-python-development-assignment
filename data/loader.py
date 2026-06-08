@@ -5,7 +5,13 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 _CUSTOMERS_REQUIRED = {"customer_id", "signup_date", "country"}
-_SUBSCRIPTIONS_REQUIRED = {"customer_id", "start_date", "end_date", "plan", "monthly_price"}
+_SUBSCRIPTIONS_REQUIRED = {
+    "customer_id",
+    "start_date",
+    "end_date",
+    "plan",
+    "monthly_price",
+}
 
 
 def _require_columns(df: pd.DataFrame, required: set[str], source: str) -> None:
@@ -16,7 +22,9 @@ def _require_columns(df: pd.DataFrame, required: set[str], source: str) -> None:
         )
 
 
-def warn_unknown_customers(customers: pd.DataFrame, subscriptions: pd.DataFrame) -> None:
+def warn_unknown_customers(
+    customers: pd.DataFrame, subscriptions: pd.DataFrame
+) -> None:
     """Log a warning for every subscription whose customer_id is absent from customers."""
     known = set(customers["customer_id"])
     unknown = set(subscriptions["customer_id"]) - known
@@ -48,16 +56,24 @@ def load_customers(path: str) -> pd.DataFrame:
 
     df["country"] = df["country"].str.upper()
 
-    df["signup_date"] = pd.to_datetime(df["signup_date"], format="mixed", errors="coerce")
+    df["signup_date"] = pd.to_datetime(
+        df["signup_date"], format="mixed", errors="coerce"
+    )
     invalid = df[df["signup_date"].isna()]
     for _, row in invalid.iterrows():
-        logger.warning("customers: skipping %s — unparseable signup_date", row["customer_id"])
+        logger.warning(
+            "customers: skipping %s — unparseable signup_date", row["customer_id"]
+        )
     df = df[df["signup_date"].notna()].copy()
 
     duplicates = df[df.duplicated("customer_id", keep=False)]["customer_id"].unique()
     for cid in duplicates:
-        logger.warning("customers: duplicate customer_id %s — keeping earliest record", cid)
-    df = df.sort_values("signup_date").drop_duplicates(subset="customer_id", keep="first")
+        logger.warning(
+            "customers: duplicate customer_id %s — keeping earliest record", cid
+        )
+    df = df.sort_values("signup_date").drop_duplicates(
+        subset="customer_id", keep="first"
+    )
 
     return df.reset_index(drop=True)
 
@@ -97,7 +113,9 @@ def load_subscriptions(path: str) -> pd.DataFrame:
     # Blank strings become NaT (still active); only non-blank failures are errors.
     raw_end = df["end_date"].fillna("").str.strip()
     is_blank = raw_end == ""
-    df["end_date"] = pd.to_datetime(raw_end.where(~is_blank, other=pd.NaT), errors="coerce")
+    df["end_date"] = pd.to_datetime(
+        raw_end.where(~is_blank, other=pd.NaT), errors="coerce"
+    )
     bad_end = ~is_blank & df["end_date"].isna()
     for idx in df[bad_end].index:
         logger.warning(
@@ -119,7 +137,8 @@ def load_subscriptions(path: str) -> pd.DataFrame:
     inverted = df["end_date"].notna() & (df["end_date"] < df["start_date"])
     for _, row in df[inverted].iterrows():
         logger.warning(
-            "subscriptions: skipping %s — end_date is before start_date", row["customer_id"]
+            "subscriptions: skipping %s — end_date is before start_date",
+            row["customer_id"],
         )
     df = df[~inverted].copy()
 

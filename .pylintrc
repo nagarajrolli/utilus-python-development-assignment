@@ -1,0 +1,21 @@
+[MAIN]
+jobs=1
+
+[MESSAGES CONTROL]
+disable=
+    # Docstrings are not required for test classes/methods or small modules
+    C0114,  # missing-module-docstring
+    C0115,  # missing-class-docstring
+    C0116,  # missing-function-docstring
+    # Pytest fixtures intentionally shadow outer-scope names
+    W0621,  # redefined-outer-name
+    # Click decorators rewrite function signatures; pylint cannot see the real args
+    E1120,  # no-value-for-argument
+
+[FORMAT]
+max-line-length=100
+
+[DESIGN]
+# Parametrized test methods can receive more arguments than the default limit
+max-args=8
+max-positional-arguments=8

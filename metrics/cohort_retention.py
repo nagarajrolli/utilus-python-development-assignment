@@ -28,7 +28,9 @@ class CohortRetentionMetric(BaseMetric):
 
     key = "cohort_retention_3m"
 
-    def compute(self, customers: pd.DataFrame, subscriptions: pd.DataFrame) -> list[dict]:
+    def compute(
+        self, customers: pd.DataFrame, subscriptions: pd.DataFrame
+    ) -> list[dict]:
         custs = customers[customers["signup_date"].notna()].copy()
         if custs.empty:
             return []
@@ -56,7 +58,9 @@ class CohortRetentionMetric(BaseMetric):
                 if not is_active.empty:
                     active_count += 1
 
-            retention_rate = round(active_count / cohort_size, 4) if cohort_size > 0 else 0.0
+            retention_rate = (
+                round(active_count / cohort_size, 4) if cohort_size > 0 else 0.0
+            )
             results.append(
                 {
                     "cohort_month": str(cohort_month),

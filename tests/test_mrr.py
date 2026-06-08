@@ -1,4 +1,3 @@
-import pandas as pd
 import pytest
 
 from metrics.mrr import MonthlyMRRMetric
@@ -11,10 +10,14 @@ def metric() -> MonthlyMRRMetric:
 
 
 class TestMonthlyMRR:
-    def test_empty_subscriptions_returns_empty(self, metric, no_customers, no_subscriptions):
+    def test_empty_subscriptions_returns_empty(
+        self, metric, no_customers, no_subscriptions
+    ):
         assert metric.compute(no_customers, no_subscriptions) == []
 
-    def test_single_open_subscription_appears_in_start_month(self, metric, no_customers):
+    def test_single_open_subscription_appears_in_start_month(
+        self, metric, no_customers
+    ):
         subs = make_subscriptions([("C001", "2024-03-01", None, 50)])
         result = metric.compute(no_customers, subs)
         months = {r["month"]: r["mrr"] for r in result}

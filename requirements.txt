@@ -1,4 +1,11 @@
 click>=8.0
 pandas>=2.0
 python-dateutil>=2.8
+
+# testing
 pytest>=8.0
+
+# code quality
+black>=24.0
+isort>=5.0
+pylint>=3.0
